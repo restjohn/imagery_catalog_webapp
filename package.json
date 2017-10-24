@@ -1,0 +1,16 @@
+{
+  "name": "imagery_catalog_webapp",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ajax-request": "^1.2.3",
+    "leaflet": "^1.2.0",
+    "leaflet-vue": "^0.1.0",
+    "vue": "^2.5.2"
+  }
+}

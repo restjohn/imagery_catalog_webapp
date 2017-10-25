@@ -31,11 +31,13 @@
     .catalog {
       padding-bottom: 5px;
     }
+    .catalog > .md-card {
+      margin-bottom: 5px;
+    }
   </style>
 </head>
 
 <body>
-
   <div id="app">
     <div id="list">
       <catalog v-for="catalog in catalogs" :key="catalog.name" :catalog="catalog"></catalog>
@@ -46,7 +48,6 @@
 </div>
 
 <script type="text/javascript" src="node_modules/leaflet/dist/leaflet.js"></script>
-<script type="text/javascript" src="node_modules/jqlite/jqlite.js"></script>
 <script type="text/javascript" src="node_modules/vue/dist/vue.js"></script>
 <script src="node_modules/vue-material/dist/vue-material.js"></script>
 
@@ -65,24 +66,35 @@
 </template>
 
 <template id="planet-item-template">
-  <md-list class="md-double-line md-dense">
-    <md-list-item>
-      <div class="md-list-text-container">
-        <span>{{item.properties.start_date}}</span>
-        <span>Start Date</span>
-      </div>
-    </md-list-item>
-    <md-list-item>
-      <div class="md-list-text-container">
-        <span>{{item.properties.end_date}}</span>
-        <span>End Date</span>
-      </div>
-    </md-list-item>
-  </md-list>
+  <div>
+    <md-list class="md-double-line md-dense">
+      <md-list-item>
+        <div class="md-list-text-container">
+          <span>{{item.properties.start_date}}</span>
+          <span>Start Date</span>
+        </div>
+      </md-list-item>
+      <md-list-item>
+        <div class="md-list-text-container">
+          <span>{{item.properties.end_date}}</span>
+          <span>End Date</span>
+        </div>
+      </md-list-item>
+    </md-list>
+    <!--<md-card-media v-if="item.properties.links.thumbnail">-->
+      <!--<md-image :md-src="item.properties.links.thumbnail"></md-image>-->
+    <!--</md-card-media>-->
+  </div>
 </template>
 
 <template id="dg-item-template">
-  DG Item
+  <div>
+    <md-list class="md-double-line md-dense">
+      <md-list-item>
+
+      </md-list-item>
+    </md-list>
+  </div>
 </template>
 
 <script>

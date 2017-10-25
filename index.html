@@ -91,7 +91,10 @@
   <div>
     <md-list class="md-double-line md-dense">
       <md-list-item>
-
+        <div class="md-list-text-container">
+          <span>{{item.properties.ingest_date}}</span>
+          <span>Ingest Date</span>
+        </div>
       </md-list-item>
     </md-list>
   </div>
@@ -106,14 +109,18 @@
     props: ['catalog'],
     methods: {
       enabledChanged: function(enabled) {
-        console.log('enabled changed for ' + this.catalog.name)
         if (enabled) {
-          if (this.catalog.items.length === 0) {
-            loadCatalogEntries(this.catalog)
+          if (this.catalog.layer) {
+            this.catalog.layer.addTo(map)
+          }
+          else {
+            loadCatalogItems(this.catalog)
           }
         }
         else {
-          this.catalog.items = []
+          if (this.catalog.layer) {
+            this.catalog.layer.removeFrom(map)
+          }
         }
       }
     }
@@ -126,7 +133,7 @@
 
   Vue.component('dg-item', {
     props: ['item'],
-    tempmlate: '#dg-item-template'
+    template: '#dg-item-template'
   })
 
   const catalogs = [
@@ -135,14 +142,24 @@
       url: 'dg_boulder_available.json',
       enabled: false,
       items: [],
-      item_component: 'dg-item'
+      item_component: 'dg-item',
+      layer_config: {
+        style: function(feature) {
+          return {color: 'red'}
+        }
+      }
     },
     {
       name: "Planet",
       url: 'planet-search-results-minimal.json',
       enabled: false,
       items: [],
-      item_component: 'planet-item'
+      item_component: 'planet-item',
+      layer_config: {
+        style: function(feature) {
+          return {color: 'blue'}
+        }
+      }
     }
   ]
 
@@ -156,7 +173,7 @@
   const map = L.map('map').setView([40.0292888,-105.3100174], 12)
   L.tileLayer('https://osm.geointservices.io/osm_tiles/{z}/{x}/{y}.png').addTo(map)
 
-  function loadCatalogEntries(catalog) {
+  function loadCatalogItems(catalog) {
     var xhr = new XMLHttpRequest()
     xhr.open('GET', catalog.url, true)
     xhr.send()
@@ -164,6 +181,7 @@
       if (this.readyState === 4) {
         var responseText = this.responseText
         catalog.items = JSON.parse(responseText)
+        catalog.layer = L.geoJSON(catalog.items, catalog.layer_config).addTo(map);
       }
     }
   }

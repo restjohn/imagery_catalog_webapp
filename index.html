@@ -1,27 +1,35 @@
 <html>
 
 <head>
+  <link rel="stylesheet" href="node_modules/vue-material/dist/vue-material.css">
   <link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css"/>
+
   <style>
     #app {
       height: 100%;
       width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
     #app > * {
       height: 100%;
       overflow: hidden;
+      position: absolute;
     }
     #list {
-      position: absolute;
       top: 0;
       left: 0;
       width: 30%;
+      overflow-y: auto;
     }
     #map {
-      position: absolute;
       top: 0;
       right: 0;
       width: 70%;
+    }
+    .catalog {
+      padding-bottom: 5px;
     }
   </style>
 </head>
@@ -30,37 +38,123 @@
 
   <div id="app">
     <div id="list">
-
+      <catalog v-for="catalog in catalogs" :key="catalog.name" :catalog="catalog"></catalog>
     </div>
-
     <div id="map">
-
     </div>
   </div>
 </div>
 
 <script type="text/javascript" src="node_modules/leaflet/dist/leaflet.js"></script>
+<script type="text/javascript" src="node_modules/jqlite/jqlite.js"></script>
 <script type="text/javascript" src="node_modules/vue/dist/vue.js"></script>
+<script src="node_modules/vue-material/dist/vue-material.js"></script>
+
+<template id="catalog-template">
+  <div class="catalog">
+    <md-toolbar>
+      <md-switch v-model="catalog.enabled" v-on:change="enabledChanged">{{catalog.name}}</md-switch>
+    </md-toolbar>
+    <md-card v-if="!catalog.items || !catalog.items.length"><md-card-content>Flip the switch</md-card-content></md-card>
+    <md-card v-for="item in catalog.items">
+      <md-card-content>
+        <component :is="catalog.item_component" :item="item"></component>
+      </md-card-content>
+    </md-card>
+  </div>
+</template>
+
+<template id="planet-item-template">
+  <md-list class="md-double-line md-dense">
+    <md-list-item>
+      <div class="md-list-text-container">
+        <span>{{item.properties.start_date}}</span>
+        <span>Start Date</span>
+      </div>
+    </md-list-item>
+    <md-list-item>
+      <div class="md-list-text-container">
+        <span>{{item.properties.end_date}}</span>
+        <span>End Date</span>
+      </div>
+    </md-list-item>
+  </md-list>
+</template>
+
+<template id="dg-item-template">
+  DG Item
+</template>
 
 <script>
-  const app = new Vue({
-    el: '#app'
+
+  Vue.use(VueMaterial)
+
+  Vue.component('catalog', {
+    template: '#catalog-template',
+    props: ['catalog'],
+    methods: {
+      enabledChanged: function(enabled) {
+        console.log('enabled changed for ' + this.catalog.name)
+        if (enabled) {
+          if (this.catalog.items.length === 0) {
+            loadCatalogEntries(this.catalog)
+          }
+        }
+        else {
+          this.catalog.items = []
+        }
+      }
+    }
   })
-  const map = L.map('map').setView([40.0292888,-105.3100174], 12)
-  L.tileLayer('https://osm.geointservices.io/osm_tiles/{z}/{x}/{y}.png').addTo(map)
+
+  Vue.component('planet-item', {
+    props: ['item'],
+    template: '#planet-item-template'
+  })
+
+  Vue.component('dg-item', {
+    props: ['item'],
+    tempmlate: '#dg-item-template'
+  })
 
   const catalogs = [
     {
       name: "Digital Globe",
-      url: 'dg_boulder_available.json'
+      url: 'dg_boulder_available.json',
+      enabled: false,
+      items: [],
+      item_component: 'dg-item'
     },
     {
       name: "Planet",
-      url: 'planet-search-results-minimal.json'
+      url: 'planet-search-results-minimal.json',
+      enabled: false,
+      items: [],
+      item_component: 'planet-item'
     }
   ]
 
-  
+  const app = new Vue({
+    el: '#app',
+    data: {
+      catalogs: catalogs
+    }
+  })
+
+  const map = L.map('map').setView([40.0292888,-105.3100174], 12)
+  L.tileLayer('https://osm.geointservices.io/osm_tiles/{z}/{x}/{y}.png').addTo(map)
+
+  function loadCatalogEntries(catalog) {
+    var xhr = new XMLHttpRequest()
+    xhr.open('GET', catalog.url, true)
+    xhr.send()
+    xhr.onreadystatechange = function() {
+      if (this.readyState === 4) {
+        var responseText = this.responseText
+        catalog.items = JSON.parse(responseText)
+      }
+    }
+  }
 </script>
 
 </body>

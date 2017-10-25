@@ -31,7 +31,8 @@
     .catalog {
       padding-bottom: 5px;
     }
-    .catalog > .md-card {
+    .catalog .md-card {
+      margin-top: 5px;
       margin-bottom: 5px;
     }
   </style>
@@ -56,12 +57,14 @@
     <md-toolbar>
       <md-switch v-model="catalog.enabled" v-on:change="enabledChanged">{{catalog.name}}</md-switch>
     </md-toolbar>
-    <md-card v-if="!catalog.items || !catalog.items.length"><md-card-content>Flip the switch</md-card-content></md-card>
-    <md-card v-for="item in catalog.items">
-      <md-card-content>
-        <component :is="catalog.item_component" :item="item"></component>
-      </md-card-content>
-    </md-card>
+    <div v-if="catalog.layer">
+      <md-card v-for="layer in catalog.layer.getLayers()">
+        <md-card-content>
+          <component :is="catalog.item_component" :item="layer.feature"></component>
+        </md-card-content>
+      </md-card>
+    </div>
+    <md-card v-else><md-card-content>Flip the switch</md-card-content></md-card>
   </div>
 </template>
 
@@ -141,25 +144,25 @@
       name: "Digital Globe",
       url: 'dg_boulder_available.json',
       enabled: false,
-      items: [],
       item_component: 'dg-item',
       layer_config: {
         style: function(feature) {
-          return {color: 'red'}
+          return {color: 'red', fillOpacity: 0.1}
         }
-      }
+      },
+      layer: null
     },
     {
       name: "Planet",
       url: 'planet-search-results-minimal.json',
       enabled: false,
-      items: [],
       item_component: 'planet-item',
       layer_config: {
         style: function(feature) {
-          return {color: 'blue'}
+          return {color: 'blue', fillOpacity: 0.1}
         }
-      }
+      },
+      layer: null
     }
   ]
 
@@ -180,8 +183,8 @@
     xhr.onreadystatechange = function() {
       if (this.readyState === 4) {
         var responseText = this.responseText
-        catalog.items = JSON.parse(responseText)
-        catalog.layer = L.geoJSON(catalog.items, catalog.layer_config).addTo(map);
+        var items = JSON.parse(responseText)
+        catalog.layer = L.geoJSON(items, catalog.layer_config).addTo(map)
       }
     }
   }
